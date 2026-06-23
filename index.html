@@ -5,13 +5,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SynergyQuest 3D</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
     <link href="./CSS/main.css" rel="stylesheet">
 </head>
 
 <body>
+    <div id="status" class="status-bar status-bar--neutral">
+        Status: Synergie noch nicht erreicht.
+    </div>
     <div id="canvas"></div>
-
     <aside class="ui-panel">
         <h1 id="game-title" class="h5 mb-3">
             Von Außen nach Innen
@@ -22,63 +24,74 @@
             einen Knoten Abstand zu den anderen haben.
         </p>
 
-        <div class="mb-3">
-            <div class="d-flex justify-content-between small">
+        <div class="progress-group" id="nature-progress">
+            <div class="progress-group__header">
                 <span id="nature-label">Natur</span>
                 <span id="nature-value">0%</span>
             </div>
             <div class="progress">
-                <div id="nature-bar" class="progress-bar" style="width: 0%"></div>
+                <div id="nature-bar" class="progress-bar progress-bar--nature" style="width: 0%"></div>
             </div>
         </div>
 
-        <div class="mb-3">
-            <div class="d-flex justify-content-between small">
-                <span id="human-label">Mensch</span>
+        <div class="progress-group" id="human-progress">
+            <div class="progress-group__header">
+                <span id="human-label">Human</span>
                 <span id="human-value">0%</span>
             </div>
             <div class="progress">
-                <div id="human-bar" class="progress-bar" style="width: 0%"></div>
+                <div id="human-bar" class="progress-bar progress-bar--human" style="width: 0%"></div>
             </div>
         </div>
 
-        <div class="mb-3">
-            <div class="d-flex justify-content-between small">
+        <div class="progress-group" id="tech-progress">
+            <div class="progress-group__header">
                 <span id="tech-label">Technik</span>
                 <span id="tech-value">0%</span>
             </div>
             <div class="progress">
-                <div id="tech-bar" class="progress-bar" style="width: 0%"></div>
+                <div id="tech-bar" class="progress-bar progress-bar--tech" style="width: 0%"></div>
             </div>
         </div>
 
-        <div id="status" class="small">
-            Status: Synergie noch nicht erreicht.
-        </div>
-
-        <button id="reset-label" class="btn btn-warning btn-sm mt-3" onclick="resetGame()">
+        <button data-title="Galaxy Button" id="reset-label" class="galaxy-button" onclick="resetGame()">
             Reset
         </button>
-
-        <div class="mt-3 d-flex gap-2">
-            <button class="btn btn-outline-light btn-sm" onclick="setLanguage('de')">
-                DE
-            </button>
-
-            <button class="btn btn-outline-light btn-sm" onclick="setLanguage('en')">
-                EN
-            </button>
-        </div>
     </aside>
+    <div class="language-wrapper">
+        <button class="custom-btn btn-10" onclick="setLanguage('de')">
+            DE
+        </button>
 
+        <button class="custom-btn btn-10" onclick="setLanguage('en')">
+            EN
+        </button>
+    </div>
+    <dialog id="question-dialog" class="question-dialog">
+        <form method="dialog" class="question-dialog__content">
+            <h2 id="question-dialog-title" class="question-dialog__title">
+                Frage
+            </h2>
+
+            <p id="question-dialog-text" class="question-dialog__text"></p>
+
+            <div id="question-dialog-answers" class="question-dialog__answers"></div>
+
+            <div class="question-dialog__actions">
+                <button type="button" id="question-dialog-cancel" class="question-dialog__cancel">
+                    Abbrechen
+                </button>
+            </div>
+        </form>
+    </dialog>
     <script src="./Assets/Libraries/three.min.js"></script>
 
     <script src="./Assets/Libraries/OBJLoader.js"></script>
 
     <script src="./Assets/Libraries/gsap.min.js"></script>
-    <script src="./Assets/Libraries/bootstrap.bundle.min.js"></script>
 
     <script src="./JavaScript/translations.js"></script>
+    <script src="./JavaScript/questions.js"></script>
     <script src="./JavaScript/main.js"></script>
 </body>
 

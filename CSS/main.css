@@ -1,3 +1,8 @@
+* {
+    box-sizing: border-box;
+    -webkit-font-smoothing: antialiased;
+}
+
 html,
 body {
     width: 100%;
@@ -16,22 +21,353 @@ body {
     display: block;
 }
 
+.status-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+
+    min-height: 44px;
+    padding: 0.75rem 1rem;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #ffffff;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-align: center;
+
+    background: rgba(30, 30, 40, 0.92);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+    backdrop-filter: blur(8px);
+
+    transition:
+        background-color 0.25s ease,
+        color 0.25s ease,
+        border-color 0.25s ease;
+}
+
+.status-bar--neutral {
+    background: rgba(24, 31, 45, 0.92);
+    border-color: rgba(255, 255, 255, 0.14);
+}
+
+.status-bar--success {
+    background: rgba(42, 142, 75, 0.92);
+    border-color: rgba(120, 255, 170, 0.45);
+}
+
+.status-bar--warning {
+    background: rgba(178, 122, 24, 0.94);
+    border-color: rgba(255, 210, 120, 0.5);
+}
+
+.status-bar--error {
+    background: rgba(176, 54, 54, 0.94);
+    border-color: rgba(255, 140, 140, 0.55);
+}
+
+.status-bar--info {
+    background: rgba(36, 106, 170, 0.94);
+    border-color: rgba(130, 195, 255, 0.5);
+}
+
 .ui-panel {
     position: fixed;
-    top: 1rem;
+    top: 4rem;
     right: 1rem;
-    width: 340px;
+    width: clamp(320px, 25vw, 100%);
+    width: clamp(320px, 25svw, 100%);
+    width: clamp(320px, 25dvw, 100%);
     max-width: calc(100vw - 2rem);
     z-index: 10;
-    background: rgba(10, 30, 25, 0.92);
+    background: #ffffff00;
     color: #ffffff;
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 1rem;
     padding: 1rem;
-    backdrop-filter: blur(8px);
+    backdrop-filter: blur(2px) grayscale(1);
+}
+
+#status {
+    margin-bottom: 1rem;
+    font-size: large;
+    font-weight: bolder;
 }
 
 .progress {
-    height: 8px;
+    height: 1em;
     background-color: rgba(255, 255, 255, 0.18);
+    margin-bottom: 0.5rem;
+    border-radius: 1em;
+}
+
+.progress-group__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.2em;
+}
+
+.progress-bar {
+    height: 100%;
+    width: 0%;
+    transition: width 0.3s ease-in-out;
+    border-radius: 1em;
+}
+
+.progress-bar--nature {
+    background: #6bd17b;
+}
+
+.progress-bar--human {
+    background: #f2c94c;
+}
+
+.progress-bar--tech {
+    background: #4db8ff;
+}
+
+#reset-label {
+    margin-top: 1rem;
+}
+
+@property --bg-y {
+    syntax: "<number>";
+    inherits: true;
+    initial-value: 50;
+}
+
+@property --bg-x {
+    syntax: "<number>";
+    inherits: true;
+    initial-value: 50;
+}
+
+@property --border-lightness {
+    syntax: "<number>";
+    inherits: true;
+    initial-value: 100;
+}
+
+@property --button-before-opacity {
+    syntax: "<number>";
+    inherits: true;
+    initial-value: 100;
+}
+
+@property --button-shadow-opacity {
+    syntax: "<number>";
+    inherits: true;
+    initial-value: 0;
+}
+
+
+.galaxy-button {
+    --border-lightness: 50;
+    --button-radius: 0.5em;
+    --button-shadow-offset: -4;
+    --button-shadow-opacity: 0;
+    --button-before-opacity: 1;
+    --button-margins: 0.5em;
+    --button-shadow: 0 calc(var(--button-shadow-offset) * 1px) calc((var(--button-shadow-offset) * 3) * 1px) hsla(230deg 100% 80% / var(--button-shadow-opacity)),
+        0 2px 4px hsla(0deg 0% 0% / 80%);
+    cursor: pointer;
+    font-size: 1.3em;
+    font-weight: bold;
+    appearance: none;
+    position: relative;
+    border: 1px solid hsl(280deg 0% calc(var(--border-lightness) * 1%));
+    padding: var(--button-margins) var(--button-margins);
+    border-radius: var(--button-radius);
+    background-color: hsl(250deg 40% 20%);
+    background-image: url(../Assets/Images/stars.png);
+    background-size: 200%;
+    background-position: calc(var(--bg-x) / 10 * -1%) calc(var(--bg-y) / 10 * -1%);
+    color: white;
+    box-shadow: var(--button-shadow);
+    transition:
+        --bg-y 0.5s cubic-bezier(.17, .67, .83, .67),
+        --bg-x 0.5s cubic-bezier(.17, .67, .83, .67),
+        --button-shadow-opacity 0s linear,
+        --border-lightness 1s linear,
+        background-position 0.5s cubic-bezier(.17, .67, .83, .67);
+    transform: scale(1.2);
+    color: transparent;
+    user-select: none;
+    margin-left: var(--button-margins);
+}
+
+.galaxy-button::before {
+    content: "";
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: hsla(0deg 0% 0% / var(--button-before-opacity));
+    width: 100%;
+    height: 100%;
+    border-radius: calc(var(--button-radius));
+    transition: --button-before-opacity 0.2s ease;
+}
+
+.galaxy-button::after {
+    content: attr(data-title);
+    display: block;
+    position: absolute;
+    font-weight: bold;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    background: linear-gradient(#ffffff, #ffffff, #000000);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.galaxy-button:hover {
+    --border-lightness: 90;
+    --button-shadow-offset: 4;
+    --button-shadow-opacity: 0.4;
+
+    transition: --button-shadow-opacity 0.2s linear,
+        --border-lightness .2s linear;
+}
+
+.galaxy-button:hover::before {
+    --button-before-opacity: 0;
+}
+
+.language-wrapper {
+    position: fixed;
+    bottom: 0.5rem;
+    right: 0.5rem;
+    display: flex;
+    gap: 10px;
+    background: #fff;
+    padding: 0.5rem;
+    box-shadow: 0 0 8px 2px #000000;
+}
+
+.custom-btn {
+    width: 100%;
+    height: 40px;
+    padding: 10px 25px;
+    border: 2px solid #000;
+    font-family: 'Lato', sans-serif;
+    font-weight: 500;
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    display: inline-block;
+}
+
+/* 10 */
+.btn-10 {
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.btn-10:after {
+    position: absolute;
+    content: " ";
+    top: 0;
+    left: 0;
+    z-index: -1;
+    width: 100%;
+    height: 100%;
+    transition: all 0.3s ease;
+    -webkit-transform: scale(.1);
+    transform: scale(.1);
+}
+
+.btn-10:hover {
+    color: #fff;
+}
+
+.btn-10:hover:after {
+    background: #000;
+    -webkit-transform: scale(1);
+    transform: scale(1);
+}
+
+.question-dialog {
+    width: min(420px, calc(100vw - 2rem));
+    padding: 0;
+    border: 0;
+    border-radius: 1rem;
+    background: rgba(10, 20, 35, 0.96);
+    color: #ffffff;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.65);
+}
+
+.question-dialog::backdrop {
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(4px);
+}
+
+.question-dialog__content {
+    padding: 1.25rem;
+}
+
+.question-dialog__title {
+    margin: 0 0 0.75rem;
+    font-size: 1.25rem;
+}
+
+.question-dialog__text {
+    margin: 0 0 1rem;
+    line-height: 1.45;
+}
+
+.question-dialog__answers {
+    display: grid;
+    gap: 0.6rem;
+}
+
+.question-dialog__answer {
+    width: 100%;
+    padding: 0.75rem 0.9rem;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 0.6rem;
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+    text-align: left;
+    cursor: pointer;
+    font: inherit;
+    transition: background 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+}
+
+.question-dialog__answer:hover {
+    background: rgba(255, 255, 255, 0.16);
+    border-color: rgba(255, 255, 255, 0.35);
+    transform: translateY(-1px);
+}
+
+.question-dialog__actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1rem;
+}
+
+.question-dialog__cancel {
+    padding: 0.55rem 0.8rem;
+    border: 0;
+    border-radius: 0.5rem;
+    background: rgba(255, 255, 255, 0.14);
+    color: #ffffff;
+    cursor: pointer;
+    font: inherit;
+}
+
+.question-dialog__cancel:hover {
+    background: rgba(255, 255, 255, 0.22);
 }

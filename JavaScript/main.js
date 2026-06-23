@@ -20,8 +20,16 @@ const QUESTION_MODE_ENABLED = true;
 const NODE_ACTIVE_EMISSIVE_INTENSITY = 1.1;
 const NODE_INACTIVE_EMISSIVE_INTENSITY = 0;
 
+const STAR_COUNT = 1800;
+const STAR_FIELD_RADIUS = 90;
+const GALAXY_ARM_COUNT = 3;
+
+const levelOrbitGroups = [];
+
 let currentLanguage = DEFAULT_LANGUAGE;
 let translations = window.I18N?.[DEFAULT_LANGUAGE] || {};
+let starField = null;
+let galaxyField = null;
 
 const sectors = {
   nature: 0,
@@ -47,50 +55,14 @@ const sectorConfig = {
   }
 };
 
-const nodeQuestions = {
-  nature: {
-    1: {
-      questionKey: 'questions.nature.1.question',
-      answers: [
-        { labelKey: 'questions.nature.1.answers.0', correct: true },
-        { labelKey: 'questions.nature.1.answers.1', correct: false }
-      ]
-    },
-    2: null,
-    3: null,
-    4: null,
-    5: null
-  },
-  human: {
-    1: {
-      questionKey: 'questions.human.1.question',
-      answers: [
-        { labelKey: 'questions.human.1.answers.0', correct: true },
-        { labelKey: 'questions.human.1.answers.1', correct: false }
-      ]
-    },
-    2: null,
-    3: null,
-    4: null,
-    5: null
-  },
-  tech: {
-    1: {
-      questionKey: 'questions.tech.1.question',
-      answers: [
-        { labelKey: 'questions.tech.1.answers.0', correct: true },
-        { labelKey: 'questions.tech.1.answers.1', correct: false }
-      ]
-    },
-    2: null,
-    3: null,
-    4: null,
-    5: null
-  }
-};
+const nodeQuestions = window.nodeQuestions || {};
+
+if (!window.nodeQuestions || Object.keys(nodeQuestions).length === 0) {
+  console.warn(t('warnings.nodeQuestionsMissing'));
+}
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x071c17);
+scene.background = new THREE.Color(0x02030a);
 
 const camera = new THREE.PerspectiveCamera(
   60,
@@ -135,8 +107,10 @@ init();
 function init() {
   createFallbackCenterSphere();
   loadSunModel();
+  createLevelOrbitGroups();
   createSectorNodes();
   createLevelRings();
+  createStarEnvironment();
 
   updateUi();
   setStatus(t('status.initial'));
@@ -146,8 +120,22 @@ function init() {
 
   window.addEventListener('pointerdown', onPointerDown);
   window.addEventListener('resize', onResize);
-
+  initGalaxyButtonHoverEffect();
   animate();
+}
+
+function createLevelOrbitGroups() {
+  for (let level = 1; level <= MAX_LEVEL; level++) {
+    const orbitGroup = new THREE.Group();
+
+    orbitGroup.userData = {
+      level,
+      rotationSpeed: level % 2 === 0 ? 0.002 : -0.002
+    };
+
+    scene.add(orbitGroup);
+    levelOrbitGroups[level] = orbitGroup;
+  }
 }
 
 function createFallbackCenterSphere() {
@@ -291,7 +279,14 @@ function createSectorNodes() {
         active: false
       };
 
-      scene.add(node);
+      const orbitGroup = levelOrbitGroups[level];
+
+      if (orbitGroup) {
+        orbitGroup.add(node);
+      } else {
+        scene.add(node);
+      }
+
       clickableNodes.push(node);
     }
   });
@@ -324,10 +319,26 @@ function createLevelRings() {
     });
 
     const ring = new THREE.LineLoop(geometry, material);
-    scene.add(ring);
+
+    const orbitGroup = levelOrbitGroups[level];
+
+    if (orbitGroup) {
+      orbitGroup.add(ring);
+    } else {
+      scene.add(ring);
+    }
   }
 }
 
+function animateLevelOrbits() {
+  levelOrbitGroups.forEach((orbitGroup) => {
+    if (!orbitGroup) {
+      return;
+    }
+
+    orbitGroup.rotation.y += orbitGroup.userData.rotationSpeed;
+  });
+}
 function getNodePosition(sector, level) {
   const radius = getRadiusForLevel(level);
   const angle = sectorConfig[sector].angle;
@@ -412,7 +423,7 @@ function getNodeActivationState(node) {
   };
 }
 
-function activateNode(node) {
+async function activateNode(node) {
   const activationState = getNodeActivationState(node);
 
   if (!activationState.allowed) {
@@ -421,13 +432,15 @@ function activateNode(node) {
   }
 
   if (QUESTION_MODE_ENABLED && hasQuestionForNode(node)) {
-    askQuestionForNode(node);
-    return;
+    const answeredCorrectly = await askQuestionForNode(node);
+
+    if (!answeredCorrectly) {
+      return;
+    }
   }
 
   completeNodeActivation(node);
 }
-
 function hasQuestionForNode(node) {
   const { sector, level } = node.userData;
 
@@ -435,36 +448,96 @@ function hasQuestionForNode(node) {
 }
 
 function askQuestionForNode(node) {
-  const { sector, level } = node.userData;
-  const questionConfig = nodeQuestions[sector][level];
+  return new Promise((resolve) => {
+    const { sector, level } = node.userData;
+    const questionConfig = nodeQuestions[sector][level];
 
-  const questionText = t(questionConfig.questionKey);
-  const answerText = questionConfig.answers
-    .map((answer, index) => `${index + 1}: ${t(answer.labelKey)}`)
-    .join('\n');
+    const dialog = document.querySelector('#question-dialog');
+    const titleElement = document.querySelector('#question-dialog-title');
+    const textElement = document.querySelector('#question-dialog-text');
+    const answersElement = document.querySelector('#question-dialog-answers');
+    const cancelButton = document.querySelector('#question-dialog-cancel');
 
-  const userInput = window.prompt(`${questionText}\n\n${answerText}`);
+    if (!dialog || !titleElement || !textElement || !answersElement || !cancelButton) {
+      console.warn(t('warnings.questionDialogMissing'));
+      resolve(false);
+      return;
+    }
 
-  if (userInput === null) {
-    setStatus(t('status.questionCancelled'));
-    return;
-  }
+    let resolved = false;
 
-  const answerIndex = Number(userInput) - 1;
-  const selectedAnswer = questionConfig.answers[answerIndex];
+    titleElement.textContent = t('ui.questionTitle');
+    textElement.textContent = t(questionConfig.questionKey);
+    answersElement.innerHTML = '';
+    cancelButton.textContent = t('ui.cancel');
 
-  if (!selectedAnswer) {
-    setStatus(t('status.questionInvalidAnswer'));
-    return;
-  }
+    function cleanup() {
+      cancelButton.removeEventListener('click', onCancel);
+      dialog.removeEventListener('cancel', onNativeCancel);
+      dialog.removeEventListener('close', onClose);
+      answersElement.innerHTML = '';
+    }
 
-  if (!selectedAnswer.correct) {
-    setStatus(t('status.questionWrongAnswer'));
-    return;
-  }
+    function finish(result) {
+      if (resolved) {
+        return;
+      }
 
-  setStatus(t('status.questionCorrectAnswer'));
-  completeNodeActivation(node);
+      resolved = true;
+      cleanup();
+
+      if (dialog.open) {
+        dialog.close();
+      }
+
+      resolve(result);
+    }
+
+    function onCancel() {
+      setStatus(t('status.questionCancelled'), 'warning');
+      finish(false);
+    }
+
+    function onNativeCancel(event) {
+      event.preventDefault();
+      setStatus(t('status.questionCancelled'), 'warning');
+      finish(false);
+    }
+
+    function onClose() {
+      if (!resolved) {
+        setStatus(t('status.questionCancelled'), 'warning');
+        finish(false);
+      }
+    }
+
+    questionConfig.answers.forEach((answer) => {
+      const answerButton = document.createElement('button');
+
+      answerButton.type = 'button';
+      answerButton.className = 'question-dialog__answer';
+      answerButton.textContent = t(answer.labelKey);
+
+      answerButton.addEventListener('click', () => {
+        if (!answer.correct) {
+          setStatus(t('status.questionWrongAnswer'), 'error');
+          finish(false);
+          return;
+        }
+
+        setStatus(t('status.questionCorrectAnswer'), 'success');
+        finish(true);
+      });
+
+      answersElement.appendChild(answerButton);
+    });
+
+    cancelButton.addEventListener('click', onCancel);
+    dialog.addEventListener('cancel', onNativeCancel);
+    dialog.addEventListener('close', onClose);
+
+    dialog.showModal();
+  });
 }
 
 function completeNodeActivation(node) {
@@ -488,14 +561,14 @@ function completeNodeActivation(node) {
   updateUi();
 
   if (checkWin()) {
-    setStatus(t('status.synergyReached'));
+    setStatus(t('status.synergyReached'), 'success');
     activateSunWinState();
     return;
   }
 
   setStatus(t('status.sectorAdvanced', {
     sector: getSectorLabel(sector)
-  }));
+  }), 'info');
 }
 
 function setNodeActivationErrorStatus(reason) {
@@ -508,7 +581,7 @@ function setNodeActivationErrorStatus(reason) {
 
   const messageKey = messageKeyByReason[reason] || 'status.nodeNotAllowed';
 
-  setStatus(t(messageKey));
+  setStatus(t(messageKey), 'warning');
 }
 
 function getSectorLabel(sector) {
@@ -713,6 +786,7 @@ function updateUi() {
 
   if (resetElement) {
     resetElement.textContent = t('ui.reset');
+    resetElement.dataset.title = t('ui.reset');
   }
 
   Object.entries(sectors).forEach(([sector, value]) => {
@@ -736,12 +810,24 @@ function updateUi() {
   });
 }
 
-function setStatus(message) {
+function setStatus(message, type = 'neutral') {
   const statusElement = document.querySelector('#status');
 
-  if (statusElement) {
-    statusElement.textContent = `${t('status.prefix')} ${message}`;
+  if (!statusElement) {
+    return;
   }
+
+  statusElement.textContent = `${t('status.prefix')} ${message}`;
+
+  statusElement.classList.remove(
+    'status-bar--neutral',
+    'status-bar--success',
+    'status-bar--warning',
+    'status-bar--error',
+    'status-bar--info'
+  );
+
+  statusElement.classList.add(`status-bar--${type}`);
 }
 
 function setLanguage(language) {
@@ -756,9 +842,9 @@ function setLanguage(language) {
   updateUi();
 
   if (checkWin()) {
-    setStatus(t('status.synergyReached'));
+    setStatus(t('status.synergyReached'), 'success');
   } else {
-    setStatus(t('status.initial'));
+    setStatus(t('status.initial'), 'neutral');
   }
 
   if (sunModel) {
@@ -791,7 +877,10 @@ function t(key, replacements = {}) {
 }
 
 function onPointerDown(event) {
-  if (event.target.closest('.ui-panel')) {
+  if (
+    event.target.closest('.ui-panel') ||
+    event.target.closest('.question-dialog')
+  ) {
     return;
   }
 
@@ -819,8 +908,6 @@ function onResize() {
 function animate() {
   requestAnimationFrame(animate);
 
-  scene.rotation.y += 0.0015;
-
   if (fallbackCenterSphere && synergyAnimationStarted && fallbackCenterSphere.visible) {
     fallbackCenterSphere.rotation.y += 0.01;
     fallbackCenterSphere.rotation.x += 0.004;
@@ -831,5 +918,140 @@ function animate() {
     sunModel.rotation.x += synergyAnimationStarted ? 0.003 : 0.001;
   }
 
+  if (starField) {
+    starField.rotation.y += 0.00025;
+  }
+
+  if (galaxyField) {
+    galaxyField.rotation.y -= 0.00045;
+  }
+
+  animateLevelOrbits();
+
   renderer.render(scene, camera);
+}
+
+function inverseMousePosition(element, event) {
+  const rect = element.getBoundingClientRect();
+  const x = event.clientX - rect.left - rect.width;
+  const y = event.clientY - rect.top - rect.height;
+  const res = { x: -x, y: -y }
+  return res;
+}
+
+function initGalaxyButtonHoverEffect() {
+  const button = document.querySelectorAll('.galaxy-button');
+  button.forEach(btn => {
+    btn.addEventListener('mousemove', () => {
+      document.body.style.setProperty('--bg-x', inverseMousePosition(btn, event).x)
+      document.body.style.setProperty('--bg-y', inverseMousePosition(btn, event).y)
+    })
+    btn.addEventListener('mouseout', () => {
+      document.body.style.setProperty('--bg-x', 0)
+      document.body.style.setProperty('--bg-y', 0)
+    })
+  })
+}
+
+function createStarEnvironment() {
+  createStarField();
+  createGalaxyDust();
+}
+
+function createStarField() {
+  const geometry = new THREE.BufferGeometry();
+  const positions = [];
+  const colors = [];
+
+  for (let i = 0; i < STAR_COUNT; i++) {
+    const radius = THREE.MathUtils.randFloat(35, STAR_FIELD_RADIUS);
+    const theta = THREE.MathUtils.randFloat(0, Math.PI * 2);
+    const phi = Math.acos(THREE.MathUtils.randFloatSpread(2));
+
+    const x = radius * Math.sin(phi) * Math.cos(theta);
+    const y = radius * Math.cos(phi);
+    const z = radius * Math.sin(phi) * Math.sin(theta);
+
+    positions.push(x, y, z);
+
+    const brightness = THREE.MathUtils.randFloat(0.55, 1);
+    colors.push(brightness, brightness, brightness);
+  }
+
+  geometry.setAttribute(
+    'position',
+    new THREE.Float32BufferAttribute(positions, 3)
+  );
+
+  geometry.setAttribute(
+    'color',
+    new THREE.Float32BufferAttribute(colors, 3)
+  );
+
+  const material = new THREE.PointsMaterial({
+    size: 0.08,
+    vertexColors: true,
+    transparent: true,
+    opacity: 0.95,
+    depthWrite: false
+  });
+
+  starField = new THREE.Points(geometry, material);
+  starField.name = 'Starfield';
+
+  scene.add(starField);
+}
+
+function createGalaxyDust() {
+  const geometry = new THREE.BufferGeometry();
+  const positions = [];
+  const colors = [];
+
+  const dustCount = 2200;
+
+  for (let i = 0; i < dustCount; i++) {
+    const arm = i % GALAXY_ARM_COUNT;
+    const armAngle = (Math.PI * 2 / GALAXY_ARM_COUNT) * arm;
+
+    const distance = THREE.MathUtils.randFloat(8, 55);
+    const spiralOffset = distance * 0.18;
+    const angle = armAngle + spiralOffset + THREE.MathUtils.randFloatSpread(0.45);
+
+    const x = Math.cos(angle) * distance + THREE.MathUtils.randFloatSpread(2.5);
+    const y = THREE.MathUtils.randFloatSpread(7);
+    const z = Math.sin(angle) * distance + THREE.MathUtils.randFloatSpread(2.5);
+
+    positions.push(x, y, z);
+
+    const blue = THREE.MathUtils.randFloat(0.55, 1);
+    const red = THREE.MathUtils.randFloat(0.25, 0.65);
+    const green = THREE.MathUtils.randFloat(0.35, 0.75);
+
+    colors.push(red, green, blue);
+  }
+
+  geometry.setAttribute(
+    'position',
+    new THREE.Float32BufferAttribute(positions, 3)
+  );
+
+  geometry.setAttribute(
+    'color',
+    new THREE.Float32BufferAttribute(colors, 3)
+  );
+
+  const material = new THREE.PointsMaterial({
+    size: 0.12,
+    vertexColors: true,
+    transparent: true,
+    opacity: 0.38,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending
+  });
+
+  galaxyField = new THREE.Points(geometry, material);
+  galaxyField.name = 'GalaxyDust';
+  galaxyField.rotation.x = Math.PI * 0.08;
+
+  scene.add(galaxyField);
 }

@@ -1,8 +1,14 @@
 window.I18N = {
     de: {
+        warnings: {
+            nodeQuestionsMissing: 'window.nodeQuestions wurde nicht gefunden oder ist leer. Fragenmodus hat keine Fragen.',
+            questionDialogMissing: 'Der Frage-Dialog wurde im HTML nicht gefunden.'
+        },
         ui: {
+            questionTitle: 'Frage',
+            cancel: 'Abbrechen',
             title: 'Von Außen nach Innen',
-            description: 'Aktiviere Knoten in Natur, Mensch und Technik. Kein Sektor darf mehr als einen Knoten Abstand zu den anderen haben.',
+            description: 'Aktiviere Planeten in Natur, Mensch und Technik. Kein Sektor darf mehr als einen Planeten Abstand zu den anderen haben.',
             reset: 'Neu starten'
         },
         sectors: {
@@ -11,12 +17,12 @@ window.I18N = {
             tech: 'Technik'
         },
         status: {
-            prefix: 'Status:',
+            prefix: 'Systemnachricht:',
             initial: 'Synergie noch nicht erreicht.',
-            nodeNotAllowed: 'Dieser Knoten kann aktuell nicht aktiviert werden.',
-            nodeAlreadyActive: 'Dieser Knoten ist bereits aktiviert.',
-            nodeWrongLevel: 'Dieser Knoten ist noch nicht freigeschaltet.',
-            nodeBalanceViolation: 'Nicht erlaubt: Kein Sektor darf mehr als einen Knoten Abstand zu den anderen haben.',
+            nodeNotAllowed: 'Dieser Planet kann aktuell nicht aktiviert werden.',
+            nodeAlreadyActive: 'Dieser Planet ist bereits aktiviert.',
+            nodeWrongLevel: 'Dieser Planet ist noch nicht freigeschaltet.',
+            nodeBalanceViolation: 'Nicht erlaubt: Kein Sektor darf mehr als einen Planet Abstand zu den anderen haben.',
             sectorAdvanced: '{sector} wurde erhöht.',
             synergyReached: 'Synergie erreicht!',
             questionCancelled: 'Frage abgebrochen.',
@@ -60,10 +66,16 @@ window.I18N = {
     },
 
     en: {
+        warnings: {
+            nodeQuestionsMissing: 'window.nodeQuestions was not found or is empty. Question mode has no questions.',
+            questionDialogMissing: 'The question dialog was not found in the HTML.'
+        },
         ui: {
             title: 'From Outside to Inside',
-            description: 'Activate nodes in Nature, Human and Technology. No sector may be more than one node ahead of the others.',
-            reset: 'Start again'
+            description: 'Activate planets in Nature, Human and Technology. No sector may be more than one planet ahead of the others.',
+            reset: 'Start again',
+            questionTitle: 'Question',
+            cancel: 'Cancel'
         },
         sectors: {
             nature: 'Nature',
@@ -71,12 +83,12 @@ window.I18N = {
             tech: 'Technology'
         },
         status: {
-            prefix: 'Status:',
+            prefix: 'System message:',
             initial: 'Synergy has not been reached yet.',
-            nodeNotAllowed: 'This node cannot be activated right now.',
-            nodeAlreadyActive: 'This node is already active.',
-            nodeWrongLevel: 'This node is not unlocked yet.',
-            nodeBalanceViolation: 'Not allowed: No sector may be more than one node ahead of the others.',
+            nodeNotAllowed: 'This planet cannot be activated right now.',
+            nodeAlreadyActive: 'This planet is already active.',
+            nodeWrongLevel: 'This planet is not unlocked yet.',
+            nodeBalanceViolation: 'Not allowed: No sector may be more than one planet ahead of the others.',
             sectorAdvanced: '{sector} has been increased.',
             synergyReached: 'Synergy reached!',
             questionCancelled: 'Question cancelled.',
