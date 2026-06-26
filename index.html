@@ -14,49 +14,62 @@
         Status: Synergie noch nicht erreicht.
     </div>
     <div id="canvas"></div>
-    <aside class="ui-panel">
-        <h1 id="game-title" class="h5 mb-3">
-            Von Außen nach Innen
-        </h1>
-
-        <p id="game-description" class="small">
-            Aktiviere Knoten in Natur, Mensch und Technik. Kein Sektor darf mehr als
-            einen Knoten Abstand zu den anderen haben.
-        </p>
-
-        <div class="progress-group" id="nature-progress">
-            <div class="progress-group__header">
-                <span id="nature-label">Natur</span>
-                <span id="nature-value">0%</span>
-            </div>
-            <div class="progress">
-                <div id="nature-bar" class="progress-bar progress-bar--nature" style="width: 0%"></div>
-            </div>
-        </div>
-
-        <div class="progress-group" id="human-progress">
-            <div class="progress-group__header">
-                <span id="human-label">Human</span>
-                <span id="human-value">0%</span>
-            </div>
-            <div class="progress">
-                <div id="human-bar" class="progress-bar progress-bar--human" style="width: 0%"></div>
-            </div>
-        </div>
-
-        <div class="progress-group" id="tech-progress">
-            <div class="progress-group__header">
-                <span id="tech-label">Technik</span>
-                <span id="tech-value">0%</span>
-            </div>
-            <div class="progress">
-                <div id="tech-bar" class="progress-bar progress-bar--tech" style="width: 0%"></div>
-            </div>
-        </div>
-
-        <button data-title="Galaxy Button" id="reset-label" class="galaxy-button" onclick="resetGame()">
-            Reset
+    <aside class="ui-panel" id="ui-panel">
+        <button class="ui-panel__handle" id="ui-panel-handle" type="button" aria-label="Menü öffnen oder schließen">
+            <span class="ui-panel__handle-bar"></span>
         </button>
+        <div class="ui-panel__content">
+            <h1 id="game-title" class="h5 mb-3">
+                Von Außen nach Innen
+            </h1>
+
+            <p id="game-description" class="small">
+                Aktiviere Knoten in Natur, Mensch und Technik. Kein Sektor darf mehr als
+                einen Knoten Abstand zu den anderen haben.
+            </p>
+            <div class="development-stage">
+                <div class="development-stage__label" id="development-stage-label">
+                    Aktuelle Entwicklungsstufe
+                </div>
+                <div class="development-stage__value" id="development-stage-value">
+                    Trennung
+                </div>
+            </div>
+            <div class="progress-group" id="nature-progress">
+                <div class="progress-group__header">
+                    <span id="nature-label">Natur</span>
+                    <span id="nature-value">0%</span>
+                </div>
+                <div class="progress">
+                    <div id="nature-bar" class="progress-bar progress-bar--nature" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <div class="progress-group" id="human-progress">
+                <div class="progress-group__header">
+                    <span id="human-label">Human</span>
+                    <span id="human-value">0%</span>
+                </div>
+                <div class="progress">
+                    <div id="human-bar" class="progress-bar progress-bar--human" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <div class="progress-group" id="tech-progress">
+                <div class="progress-group__header">
+                    <span id="tech-label">Technik</span>
+                    <span id="tech-value">0%</span>
+                </div>
+                <div class="progress">
+                    <div id="tech-bar" class="progress-bar progress-bar--tech" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <button data-title="Galaxy Button" id="reset-label" class="galaxy-button" onclick="resetGame()">
+                Reset
+            </button>
+        </div>
+
     </aside>
     <div class="language-wrapper">
         <button class="custom-btn btn-10" onclick="setLanguage('de')">
@@ -84,15 +97,25 @@
             </div>
         </form>
     </dialog>
+
     <script src="./Assets/Libraries/three.min.js"></script>
-
     <script src="./Assets/Libraries/OBJLoader.js"></script>
-
     <script src="./Assets/Libraries/gsap.min.js"></script>
 
-    <script src="./JavaScript/translations.js"></script>
-    <script src="./JavaScript/questions.js"></script>
-    <script src="./JavaScript/main.js"></script>
+    <script src="./JavaScript/data/translations.js"></script>
+    <script src="./JavaScript/data/questions.js"></script>
+
+    <script src="./JavaScript/core/SceneManager.js"></script>
+    <script src="./JavaScript/objects/StarEnvironment.js"></script>
+    <script src="./JavaScript/objects/Sun.js"></script>
+    <script src="./JavaScript/objects/OrbitSystem.js"></script>
+    <script src="./JavaScript/ui/UIManager.js"></script>
+    <script src="./JavaScript/ui/QuestionDialog.js"></script>
+    <script src="./JavaScript/ui/MobilePanelController.js"></script>
+    <script src="./JavaScript/core/InputController.js"></script>
+    <script src="./JavaScript/core/Game.js"></script>
+    <script src="./JavaScript/app.js"></script>
+
 </body>
 
 </html>

@@ -8,7 +8,7 @@ window.I18N = {
             questionTitle: 'Frage',
             cancel: 'Abbrechen',
             title: 'Von Außen nach Innen',
-            description: 'Aktiviere Planeten in Natur, Mensch und Technik. Kein Sektor darf mehr als einen Planeten Abstand zu den anderen haben.',
+            description: 'Entwickle die Entwicklungsstufen Mensch, Natur und Technik von außen nach innen. Jeder Ring steht für eine Entwicklungsstufe. Halte die Entwicklungsstufen im Gleichgewicht und erreiche im Zentrum echte Synergie.',
             reset: 'Neu starten'
         },
         sectors: {
@@ -72,7 +72,7 @@ window.I18N = {
         },
         ui: {
             title: 'From Outside to Inside',
-            description: 'Activate planets in Nature, Human and Technology. No sector may be more than one planet ahead of the others.',
+            description: 'Develop the stages of development - humanity, nature and technology - from the outside in. Each ring represents a stage of development. Keep the stages of development in balance and achieve genuine synergy at the centre.',
             reset: 'Start again',
             questionTitle: 'Question',
             cancel: 'Cancel'
