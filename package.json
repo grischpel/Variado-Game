@@ -1,0 +1,12 @@
+{
+  "name": "synergyquest-3d",
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "test": "jest --runInBand",
+    "test:watch": "jest --watch"
+  },
+  "devDependencies": {
+    "jest": "^30.0.0"
+  }
+}

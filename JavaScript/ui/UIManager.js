@@ -42,6 +42,7 @@ window.UIManager = class UIManager {
     const titleElement = document.querySelector('#game-title');
     const descriptionElement = document.querySelector('#game-description');
     const resetElement = document.querySelector('#reset-label');
+    const participantElement = document.querySelector('#participant-label');
 
     if (titleElement) {
       titleElement.textContent = this.t('ui.title');
@@ -54,6 +55,11 @@ window.UIManager = class UIManager {
     if (resetElement) {
       resetElement.textContent = this.t('ui.reset');
       resetElement.dataset.title = this.t('ui.reset');
+    }
+
+    if (participantElement) {
+      participantElement.textContent = this.t('ui.participant');
+      participantElement.dataset.title = this.t('ui.participant');
     }
 
     Object.entries(sectors).forEach(([sector, value]) => {
@@ -77,6 +83,14 @@ window.UIManager = class UIManager {
     });
 
     this.updateDevelopmentStage(sectors);
+  }
+
+  setParticipantButtonVisible(visible) {
+    const participantElement = document.querySelector('#participant-label');
+
+    if (participantElement) {
+      participantElement.hidden = !visible;
+    }
   }
 
   setStatus(message, type = 'neutral') {

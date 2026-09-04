@@ -65,9 +65,14 @@
                 </div>
             </div>
 
-            <button data-title="Galaxy Button" id="reset-label" class="galaxy-button" onclick="resetGame()">
-                Reset
-            </button>
+            <div class="ui-panel__actions">
+                <button data-title="Neu starten" id="reset-label" class="galaxy-button ui-action-button" onclick="resetGame()">
+                    Reset
+                </button>
+                <button data-title="Teilnahme eintragen" id="participant-label" class="galaxy-button ui-action-button participant-button" type="button" hidden>
+                    Teilnahme eintragen
+                </button>
+            </div>
         </div>
 
     </aside>
@@ -98,6 +103,28 @@
         </form>
     </dialog>
 
+    <dialog id="participant-dialog" class="question-dialog participant-dialog">
+        <form method="dialog" id="participant-form" class="question-dialog__content">
+            <h2 id="participant-dialog-title" class="question-dialog__title">Teilnahme eintragen</h2>
+            <p id="participant-dialog-text" class="question-dialog__text"></p>
+
+            <label class="participant-dialog__field" for="participant-name">
+                <span id="participant-name-label">Name</span>
+                <input id="participant-name" name="name" type="text" autocomplete="name" required>
+            </label>
+            <label class="participant-dialog__field" for="participant-email">
+                <span id="participant-email-label">E-Mail-Adresse</span>
+                <input id="participant-email" name="email" type="email" autocomplete="email" required>
+            </label>
+            <p id="participant-dialog-error" class="participant-dialog__error" role="alert" hidden></p>
+
+            <div class="question-dialog__actions">
+                <button type="button" id="participant-dialog-cancel" class="question-dialog__cancel">Abbrechen</button>
+                <button type="submit" id="participant-dialog-save" class="question-dialog__answer">Senden</button>
+            </div>
+        </form>
+    </dialog>
+
     <script src="./Assets/Libraries/three.min.js"></script>
     <script src="./Assets/Libraries/OBJLoader.js"></script>
     <script src="./Assets/Libraries/gsap.min.js"></script>
@@ -111,6 +138,7 @@
     <script src="./JavaScript/objects/OrbitSystem.js"></script>
     <script src="./JavaScript/ui/UIManager.js"></script>
     <script src="./JavaScript/ui/QuestionDialog.js"></script>
+    <script src="./JavaScript/ui/ParticipantDialog.js"></script>
     <script src="./JavaScript/ui/MobilePanelController.js"></script>
     <script src="./JavaScript/core/InputController.js"></script>
     <script src="./JavaScript/core/Game.js"></script>

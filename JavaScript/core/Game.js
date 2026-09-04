@@ -37,6 +37,8 @@ window.Game = class Game {
     this.inputController = null;
 
     this.mobilePanelController = null;
+    this.participantDialog = null;
+    this.winPanelTimer = null;
   }
 
   init() {
@@ -106,6 +108,12 @@ window.Game = class Game {
 
     this.mobilePanelController.init();
 
+    this.participantDialog = new window.ParticipantDialog(
+      (key, replacements) => this.t(key, replacements),
+      (message, type) => this.uiManager.setStatus(message, type)
+    );
+    this.participantDialog.init();
+
     this.initGalaxyButtonHoverEffect();
 
     this.sceneManager.start();
@@ -156,6 +164,8 @@ window.Game = class Game {
     if (this.checkWin()) {
       this.uiManager.setStatus(this.t('status.synergyReached'), 'success');
       this.sun.activateWinState();
+      this.uiManager.setParticipantButtonVisible(true);
+      this.scheduleWinPanelOpen();
       return;
     }
 
@@ -251,13 +261,38 @@ window.Game = class Game {
   }
 
   reset() {
+    this.clearWinPanelTimer();
     this.resetSectors();
     this.orbitSystem.resetNodes();
     this.sun.reset();
     this.sun.setProgress(0);
+    this.uiManager.setParticipantButtonVisible(false);
 
     this.uiManager.updateUi(this.sectors);
+
+    this.participantDialog?.refreshLanguage();
     this.uiManager.setStatus(this.t('status.initial'), 'neutral');
+  }
+
+  scheduleWinPanelOpen() {
+    this.clearWinPanelTimer();
+
+    this.winPanelTimer = window.setTimeout(() => {
+      this.winPanelTimer = null;
+
+      if (this.mobilePanelController?.isMobile()) {
+        this.mobilePanelController.open();
+      }
+    }, 3000);
+  }
+
+  clearWinPanelTimer() {
+    if (this.winPanelTimer === null) {
+      return;
+    }
+
+    window.clearTimeout(this.winPanelTimer);
+    this.winPanelTimer = null;
   }
 
   resetSectors() {
@@ -280,6 +315,8 @@ window.Game = class Game {
     } else {
       this.uiManager.setStatus(this.t('status.initial'), 'neutral');
     }
+
+    this.participantDialog?.refreshLanguage();
 
     this.sun.refreshLanguage();
   }

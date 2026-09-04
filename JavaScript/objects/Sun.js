@@ -9,6 +9,9 @@ window.Sun = class Sun {
     this.sunModelLoaded = false;
     this.sunBaseScaleValue = null;
     this.sunLight = null;
+    this.winEffectGroup = null;
+    this.winParticles = null;
+    this.winRings = [];
     this.synergyAnimationStarted = false;
 
     this.coldSunColor = 0x6f86a8;
@@ -38,6 +41,17 @@ window.Sun = class Sun {
     if (this.sunModel && this.sunModel.visible) {
       this.sunModel.rotation.y += this.synergyAnimationStarted ? 0.01 : 0.003;
       this.sunModel.rotation.x += this.synergyAnimationStarted ? 0.003 : 0.001;
+    }
+
+    if (this.synergyAnimationStarted && this.winEffectGroup) {
+      this.winEffectGroup.rotation.y += 0.004;
+      this.winEffectGroup.rotation.z -= 0.002;
+      this.animateWinParticles();
+    }
+
+    if (this.synergyAnimationStarted && this.sunLight) {
+      this.sunLight.intensity = this.config.winLightIntensity +
+        Math.sin(performance.now() * 0.004) * 0.25;
     }
   }
 
@@ -177,6 +191,127 @@ window.Sun = class Sun {
     }
 
     this.createWinSunLight();
+    this.createWinEffect();
+  }
+
+  createWinEffect() {
+    this.winEffectGroup = new THREE.Group();
+    this.winEffectGroup.name = 'win-effect';
+    this.scene.add(this.winEffectGroup);
+
+    const ringColors = [0xffd166, 0xff8c42, 0x7df9ff];
+    ringColors.forEach((color, index) => {
+      const ring = new THREE.Mesh(
+        new THREE.TorusGeometry(1.35 + index * 0.18, 0.025, 8, 96),
+        new THREE.MeshBasicMaterial({
+          color,
+          transparent: true,
+          opacity: 0,
+          blending: THREE.AdditiveBlending,
+          depthWrite: false
+        })
+      );
+
+      ring.rotation.x = index === 1 ? Math.PI / 2 : index * 0.55;
+      ring.rotation.z = index * 0.8;
+      this.winEffectGroup.add(ring);
+      this.winRings.push(ring);
+
+      gsap.to(ring.scale, {
+        x: 4.8,
+        y: 4.8,
+        z: 4.8,
+        duration: 2.8 + index * 0.35,
+        delay: index * 0.16,
+        ease: 'power2.out'
+      });
+      gsap.to(ring.material, {
+        opacity: 0.7,
+        duration: 0.18,
+        delay: index * 0.16,
+        yoyo: true,
+        repeat: 1,
+        ease: 'power2.inOut'
+      });
+    });
+
+    const particleCount = 220;
+    const positions = new Float32Array(particleCount * 3);
+    const velocities = new Float32Array(particleCount);
+
+    for (let index = 0; index < particleCount; index++) {
+      const angle = Math.random() * Math.PI * 2;
+      const radius = 1.6 + Math.random() * 0.7;
+      const height = (Math.random() - 0.5) * 1.3;
+      const offset = index * 3;
+
+      positions[offset] = Math.cos(angle) * radius;
+      positions[offset + 1] = height;
+      positions[offset + 2] = Math.sin(angle) * radius;
+      velocities[index] = 0.012 + Math.random() * 0.022;
+    }
+
+    const particleGeometry = new THREE.BufferGeometry();
+    particleGeometry.setAttribute(
+      'position',
+      new THREE.BufferAttribute(positions, 3)
+    );
+
+    this.winParticles = new THREE.Points(
+      particleGeometry,
+      new THREE.PointsMaterial({
+        color: 0xffd166,
+        size: 0.09,
+        transparent: true,
+        opacity: 0,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+      })
+    );
+    this.winParticles.userData.velocities = velocities;
+    this.winEffectGroup.add(this.winParticles);
+
+    gsap.to(this.winParticles.material, {
+      opacity: 0.95,
+      duration: 0.5,
+      ease: 'power2.out'
+    });
+    gsap.to(this.winParticles.material, {
+      size: 0.16,
+      duration: 1.4,
+      yoyo: true,
+      repeat: -1,
+      ease: 'sine.inOut'
+    });
+  }
+
+  animateWinParticles() {
+    if (!this.winParticles) {
+      return;
+    }
+
+    const positions = this.winParticles.geometry.attributes.position.array;
+    const velocities = this.winParticles.userData.velocities;
+
+    for (let index = 0; index < velocities.length; index++) {
+      const offset = index * 3;
+      const distance = Math.hypot(positions[offset], positions[offset + 2]);
+      const scale = distance > 6 ? 0.35 : 1;
+
+      positions[offset] *= 1 + velocities[index] * scale;
+      positions[offset + 2] *= 1 + velocities[index] * scale;
+      positions[offset + 1] += velocities[index] * 0.22;
+
+      if (distance > 8 || positions[offset + 1] > 4) {
+        const angle = Math.random() * Math.PI * 2;
+        const radius = 1.6 + Math.random() * 0.7;
+        positions[offset] = Math.cos(angle) * radius;
+        positions[offset + 1] = (Math.random() - 0.5) * 1.3;
+        positions[offset + 2] = Math.sin(angle) * radius;
+      }
+    }
+
+    this.winParticles.geometry.attributes.position.needsUpdate = true;
   }
 
   activateSunModelWinState() {
@@ -256,6 +391,7 @@ window.Sun = class Sun {
 
     this.resetSunModelState();
     this.resetFallbackSphereState();
+    this.removeWinEffect();
     this.removeWinSunLight();
     this.setProgress(0);
   }
@@ -318,6 +454,30 @@ window.Sun = class Sun {
     }
 
     this.sunLight = null;
+  }
+
+  removeWinEffect() {
+    if (!this.winEffectGroup) {
+      return;
+    }
+
+    this.winRings.forEach((ring) => {
+      gsap.killTweensOf(ring.scale);
+      gsap.killTweensOf(ring.material);
+      ring.geometry.dispose();
+      ring.material.dispose();
+    });
+
+    if (this.winParticles) {
+      gsap.killTweensOf(this.winParticles.material);
+      this.winParticles.geometry.dispose();
+      this.winParticles.material.dispose();
+    }
+
+    this.scene.remove(this.winEffectGroup);
+    this.winEffectGroup = null;
+    this.winParticles = null;
+    this.winRings = [];
   }
 
   refreshLanguage() {
