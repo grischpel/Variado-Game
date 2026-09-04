@@ -14,10 +14,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Repository auschecken
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Node.js einrichten
+      - name: Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 24
