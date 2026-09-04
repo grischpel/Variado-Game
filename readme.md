@@ -218,3 +218,14 @@ Für den interaktiven Watch-Modus:
 ```bash
 npm run test:watch
 ```
+
+## GitHub-Pipeline
+
+Die Datei `.github/workflows/tests.yml` definiert eine GitHub-Actions-Pipeline. Sie wird automatisch bei jedem Push auf `main` und bei jedem Pull Request gegen `main` gestartet und führt aus:
+
+1. Repository auschecken
+2. Node.js 20 einrichten
+3. Abhängigkeiten mit `npm ci` installieren
+4. Tests mit `npm test` ausführen
+
+Nach dem Push ist der Lauf im GitHub-Repository unter **Actions** sichtbar. Ein fehlgeschlagener Test markiert den Workflow als fehlgeschlagen und kann dadurch als erforderlicher Check für Pull Requests verwendet werden.
