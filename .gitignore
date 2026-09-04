@@ -1,1 +1,34 @@
 node_modules/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Logs and runtime output
+logs/
+*.log
+*.pid
+*.seed
+
+# Test and build output
+coverage/
+dist/
+build/
+.cache/
+.nyc_output/
+
+# Local application data
+data/participants.xml
+
+# Operating system files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Editors and IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+.github/
