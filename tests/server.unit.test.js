@@ -4,18 +4,18 @@ const {
   normalizeName
 } = require('../server');
 
-describe('Teilnehmer-Normalisierung', () => {
-  test('reduziert Leerzeichen und normalisiert Unicode im Namen', () => {
+describe('Participant normalization', () => {
+  test('reduces whitespace and normalizes Unicode in names', () => {
     expect(normalizeName('  Max   Mustermann  ')).toBe('Max Mustermann');
     expect(normalizeName('Cafe\u0301  Test')).toBe('Café Test');
   });
 
-  test('trimmt und vereinheitlicht E-Mail-Adressen', () => {
+  test('trims and standardizes email addresses', () => {
     expect(normalizeEmail('  TEST@Example.COM ')).toBe('test@example.com');
   });
 });
 
-describe('Dublettenprüfung', () => {
+describe('Duplicate detection', () => {
   const xml = `
     <participants>
       <participant>
@@ -26,7 +26,7 @@ describe('Dublettenprüfung', () => {
     </participants>
   `;
 
-  test('erkennt gleiche normalisierte Kombination aus Name, E-Mail und IP', () => {
+  test('detects the same normalized combination of name, email, and IP', () => {
     expect(hasExistingParticipant(
       xml,
       normalizeName(' Max   Mustermann '),
@@ -35,7 +35,7 @@ describe('Dublettenprüfung', () => {
     )).toBe(true);
   });
 
-  test('akzeptiert gleiche E-Mail und IP bei anderem Namen', () => {
+  test('accepts the same email and IP with a different name', () => {
     expect(hasExistingParticipant(
       xml,
       'Erika Musterfrau',
@@ -44,7 +44,7 @@ describe('Dublettenprüfung', () => {
     )).toBe(false);
   });
 
-  test('akzeptiert gleichen Namen und gleiche E-Mail bei anderer IP', () => {
+  test('accepts the same name and email with a different IP', () => {
     expect(hasExistingParticipant(
       xml,
       'Max Mustermann',

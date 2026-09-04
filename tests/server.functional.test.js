@@ -8,7 +8,7 @@ process.env.PARTICIPANT_FILE = participantFile;
 
 const { createServer } = require('../server');
 
-describe('Teilnahme-API', () => {
+describe('Participation API', () => {
   let server;
   let baseUrl;
 
@@ -23,7 +23,7 @@ describe('Teilnahme-API', () => {
     fs.rmSync(temporaryDirectory, { recursive: true, force: true });
   });
 
-  test('speichert normalisierte Daten als XML', async () => {
+  test('stores normalized data as XML', async () => {
     const response = await fetch(`${baseUrl}/api/participants`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -41,7 +41,7 @@ describe('Teilnahme-API', () => {
     expect(xml).toContain('<ipAddress>127.0.0.1</ipAddress>');
   });
 
-  test('weist nur eine vollständig identische Teilnahme ab', async () => {
+  test('rejects only a completely identical participation', async () => {
     const duplicate = await fetch(`${baseUrl}/api/participants`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -57,7 +57,7 @@ describe('Teilnahme-API', () => {
     expect(differentName.status).toBe(201);
   });
 
-  test('weist unvollständige oder ungültige Daten mit 400 zurück', async () => {
+  test('rejects incomplete or invalid data with 400', async () => {
     const response = await fetch(`${baseUrl}/api/participants`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -68,7 +68,7 @@ describe('Teilnahme-API', () => {
     expect(await response.json()).toEqual({ error: 'Ungültige Teilnahme-Daten.' });
   });
 
-  test('liefert die private XML-Datei nicht aus', async () => {
+  test('does not serve the private XML file', async () => {
     const response = await fetch(`${baseUrl}/data/participants.xml`);
 
     expect(response.status).toBe(404);
